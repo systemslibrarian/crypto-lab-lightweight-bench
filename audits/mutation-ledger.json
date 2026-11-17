@@ -1,0 +1,345 @@
+{
+  "note": "Written by scripts/mutations.mjs. Every observed field here was produced by the run that performed the mutation; none of it is typed by hand. Re-run the script to reproduce it.",
+  "ranAt": "2026-11-17T14:25:13.718Z",
+  "baselineBundle": "2cd8a16ca6219739",
+  "records": [
+    {
+      "id": 1,
+      "title": "SIMON key words used left to right (printed order, not round-key order)",
+      "why": "ePrint 2013/404 §3.2: \"they are loaded into the shift registers with k0 on the right\". Reading the printed words left to right gives a cipher that is self-consistent, decrypts its own ciphertext, and agrees with no published vector.",
+      "file": "src/ciphers/simon.ts",
+      "anchor": "  return bytesToWords(key, p.n).reverse();",
+      "replacement": "  return bytesToWords(key, p.n);",
+      "owner": {
+        "kind": "unit",
+        "grep": "SIMON 32/64 reproduces"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "631948ad3ded3acb",
+      "fileHashAfter": "43a7923d9427a654",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "bfea63c5f9508e46",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": null
+    },
+    {
+      "id": 2,
+      "title": "SPECK's 16-bit rotation amounts (7, 2) used at every word size",
+      "why": "ePrint 2013/404 §4.1 fixes (alpha, beta) = (7, 2) only for n = 16 and (8, 3) otherwise. Hardcoding (7, 2) leaves SPECK32/64 passing, so a suite that tests only the smallest size cannot see it.",
+      "file": "src/ciphers/speck.ts",
+      "anchor": "export function speckRound(x: bigint, y: bigint, k: bigint, p: SpeckParams): [bigint, bigint] {\n  const { n, alpha, beta } = p;",
+      "replacement": "export function speckRound(x: bigint, y: bigint, k: bigint, p: SpeckParams): [bigint, bigint] {\n  const { n } = p;\n  const alpha = 7;\n  const beta = 2;",
+      "owner": {
+        "kind": "unit",
+        "grep": "SPECK 48/72 reproduces"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "f64b0352d3e24caa",
+      "fileHashAfter": "123cd02600bbb773",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "7b84885dd6509a42",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": {
+        "grep": "SPECK 32/64 reproduces",
+        "passed": true,
+        "ran": 1
+      }
+    },
+    {
+      "id": 3,
+      "title": "SIMON's constant sequence read from the wrong end",
+      "why": "ePrint 2013/404 §3.2 indexes round key i+m with (z_j)_i, reading the printed sequence left to right. Reading it right to left is a different cipher with the same structure.",
+      "file": "src/ciphers/simon.ts",
+      "anchor": "    const zi = BigInt(z.charCodeAt((i % 62)) - 48);",
+      "replacement": "    const zi = BigInt(z.charCodeAt(61 - (i % 62)) - 48);",
+      "owner": {
+        "kind": "unit",
+        "grep": "SIMON 32/64 reproduces"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "631948ad3ded3acb",
+      "fileHashAfter": "b89659459885a128",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "3e7b8f7e864564c9",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": null
+    },
+    {
+      "id": 4,
+      "title": "GIFT-64 round key added at bit positions 4i+1 and 4i+2 (the GIFT-128 positions)",
+      "why": "ePrint 2017/622 §2 puts GIFT-64’s round key at 4i and 4i+1, and GIFT-128’s at 4i+1 and 4i+2. The all-zero vector CANNOT see this: an all-zero round key XORs to nothing wherever it is placed. Vectors 2 and 3 can.",
+      "file": "src/ciphers/gift.ts",
+      "anchor": "  if (blockBits === 64) {\n    for (let i = 0; i < s; i++) {\n      bits[4 * i + 1] ^= u[i];\n      bits[4 * i] ^= v[i];\n    }",
+      "replacement": "  if (blockBits === 64) {\n    for (let i = 0; i < s; i++) {\n      bits[4 * i + 2] ^= u[i];\n      bits[4 * i + 1] ^= v[i];\n    }",
+      "owner": {
+        "kind": "unit",
+        "grep": "GIFT-64 reproduces designers’ vector 2"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "ab590246d2387a58",
+      "fileHashAfter": "c86ccf23726b08a0",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "0436884753d30ff8",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": {
+        "grep": "GIFT-64 reproduces designers’ vector 1",
+        "passed": true,
+        "ran": 1
+      }
+    },
+    {
+      "id": 5,
+      "title": "GIFT's key state rotation skipped",
+      "why": "ePrint 2017/622 §2 updates the key state as k1 >>> 2 || k0 >>> 12 || k7 ... k2. Skipping the two rotations is invisible to the all-zero vector, whose key state is all zero however it is rotated.",
+      "file": "src/ciphers/gift.ts",
+      "anchor": "  return [k[2], k[3], k[4], k[5], k[6], k[7], ror16(k[0], 12), ror16(k[1], 2)];",
+      "replacement": "  return [k[2], k[3], k[4], k[5], k[6], k[7], ror16(k[0], 0), ror16(k[1], 0)];",
+      "owner": {
+        "kind": "unit",
+        "grep": "GIFT-64 reproduces designers’ vector 2"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "ab590246d2387a58",
+      "fileHashAfter": "bf4a258cb2700aa9",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "9842e60bf44eed46",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": {
+        "grep": "GIFT-64 reproduces designers’ vector 1",
+        "passed": true,
+        "ran": 1
+      }
+    },
+    {
+      "id": 6,
+      "title": "SKINNY's state loaded column-wise instead of row-wise",
+      "why": "ePrint 2016/660 §2: \"the state is loaded row-wise rather than in the column-wise fashion we have come to expect from the AES\". The transposed load costs nothing in self-consistency and every published vector.",
+      "file": "src/ciphers/skinny.ts",
+      "anchor": "  // Returned row-major, which is what the paper specifies and what the AES\n  // habit gets wrong. Transposing here instead is mutation (6) in the ledger:\n  // the cipher stays perfectly self-consistent and matches no published vector.\n  return cells;",
+      "replacement": "  // MUTATION (6): column-wise load.\n  return cells.map((_, i) => cells[(i % 4) * 4 + Math.floor(i / 4)]);",
+      "owner": {
+        "kind": "unit",
+        "grep": "SKINNY-64-64 reproduces"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "ee2a948eaa07aa88",
+      "fileHashAfter": "0010c0fd52932c2c",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "00be91f631d2bad0",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": null
+    },
+    {
+      "id": 7,
+      "title": "SKINNY's tweakey updated BEFORE it is XORed in",
+      "why": "ePrint 2016/660 §2 applies AddRoundTweakey and then updates the arrays. Updating first shifts every round key by one round.",
+      "file": "src/ciphers/skinny.ts",
+      "anchor": "    addRoundTweakey(st, tk); // XOR in FIRST ...\n    updateTweakey(tk, p.s); // ... then update",
+      "replacement": "    updateTweakey(tk, p.s); // MUTATION (7): update BEFORE the XOR\n    addRoundTweakey(st, tk);",
+      "owner": {
+        "kind": "unit",
+        "grep": "SKINNY-64-64 reproduces"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "ee2a948eaa07aa88",
+      "fileHashAfter": "14403ee0041a9453",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "581d6ecce5c1060f",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": null
+    },
+    {
+      "id": 8,
+      "title": "PRINCE's SR applied as a scatter instead of a gather",
+      "why": "ePrint 2012/529 §3.3 prints SR as a mapping whose direction the prose leaves implicit. Read as a scatter it is the inverse permutation, which is a different cipher.",
+      "file": "src/ciphers/prince.ts",
+      "anchor": "    const nib = (x >> BigInt(60 - 4 * perm[i])) & 0xfn;\n    out |= nib << BigInt(60 - 4 * i);",
+      "replacement": "    const nib = (x >> BigInt(60 - 4 * i)) & 0xfn;\n    out |= nib << BigInt(60 - 4 * perm[i]);",
+      "owner": {
+        "kind": "unit",
+        "grep": "reproduces Appendix A vector 1"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "e2cab0368193f2d8",
+      "fileHashAfter": "e98324e9bddaeb03",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "80f9fa076f280e0d",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": null
+    },
+    {
+      "id": 9,
+      "title": "PRINCE's reflection decryption without adding alpha to the core key",
+      "why": "ePrint 2012/529 §2: D_(k0||k0′||k1) = E_(k0′||k0||k1 XOR alpha). Swapping the whitening keys without adding alpha is the shape of the property with the constant that makes it true removed.",
+      "file": "src/ciphers/prince.ts",
+      "anchor": "  toBytes(k1 ^ alpha).forEach((b, i) => (swapped[8 + i] = b));",
+      "replacement": "  toBytes(k1 ^ (alpha & 0n)).forEach((b, i) => (swapped[8 + i] = b));",
+      "owner": {
+        "kind": "unit",
+        "grep": "reflection decryption equals the step-by-step inverse"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "e2cab0368193f2d8",
+      "fileHashAfter": "ca6fa3f820ea30b4",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "fe0cd54bd8a732c7",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": null
+    },
+    {
+      "id": 10,
+      "title": "Rotational survival counted on one output word instead of both",
+      "why": "A pair survives only if BOTH output words are rotationally related. At ONE round the two checks are provably equivalent (the second word is the first XOR a rotation-invariant term), which is why a single-round test cannot see this; from three rounds on they come apart by about 15%.",
+      "file": "src/analysis/rotational.ts",
+      "anchor": "      if (bx === rot16(ax, r) && by === rot16(ay, r)) survivors++;",
+      "replacement": "      if (bx === rot16(ax, r)) survivors++;",
+      "owner": {
+        "kind": "unit",
+        "grep": "at three rounds, checking one output word"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "3055a7df20e55fd8",
+      "fileHashAfter": "c79132025ea4a1c5",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "8bb4d512439a50cc",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": {
+        "grep": "at one round, checking one output word",
+        "passed": true,
+        "ran": 1
+      }
+    },
+    {
+      "id": 11,
+      "title": "A cipher reported as \"vectors pass\" from a stored value instead of a live comparison",
+      "why": "Invariant 1 says a cipher is offered only if every published vector reproduces, and it is enforced by RUNNING them at load. Replacing the comparison with the expected value makes the check vacuous — and invisible, because every cipher that ships here is correct. Only a deliberately broken module can tell the difference, which is what the owning test injects.",
+      "file": "src/ciphers/index.ts",
+      "anchor": "      const got = toHex(v.encrypt(pt, key));\n      if (got !== t.cipherHex) {",
+      "replacement": "      const got = v.encrypt(pt, key) ? t.cipherHex : t.cipherHex; // MUTATION (11)\n      if (got !== t.cipherHex) {",
+      "owner": {
+        "kind": "unit",
+        "grep": "withholds a cipher whose encryption is wrong"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "5a1beeaf96f7dc54",
+      "fileHashAfter": "12ab7638d80540a3",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "6934795ca918927d",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": null
+    },
+    {
+      "id": 12,
+      "title": "SPECK key words reversed (round-key order, not printed order)",
+      "why": "The mirror of mutation (1). SPECK’s schedule takes the key in the order the paper PRINTS it — (l[m-2], ..., l[0], k[0]) — where SIMON’s wants it reversed. Applying SIMON’s convention to SPECK is the same class of error in the other direction.",
+      "file": "src/ciphers/speck.ts",
+      "anchor": "  const rk = speckKeySchedule(bytesToWords(key, p.n), p);\n  let [x, y] = bytesToWords(block, p.n);\n  for (let r = 0; r < p.rounds; r++) [x, y] = speckRound(x, y, rk[r], p);",
+      "replacement": "  const rk = speckKeySchedule(bytesToWords(key, p.n).reverse(), p);\n  let [x, y] = bytesToWords(block, p.n);\n  for (let r = 0; r < p.rounds; r++) [x, y] = speckRound(x, y, rk[r], p);",
+      "owner": {
+        "kind": "unit",
+        "grep": "SPECK 32/64 reproduces"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "f64b0352d3e24caa",
+      "fileHashAfter": "3d0088379f12407e",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "71facccae1e2b253",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 3,
+      "blind": null
+    },
+    {
+      "id": 13,
+      "title": "The negative claim’s second clause deleted (§4.1d bite 1)",
+      "why": "§4.1d requires the negative-claim test to bite: delete the text naming the limitation and assertion 3 must fail. What is left still says the round function has the property, which is the half that flatters the page.",
+      "file": "src/analysis/rotational.ts",
+      "anchor": "export const NEGATIVE_CLAIM =\n  'Rotational pairs pass through SPECK’s round function with high probability. ' +\n  'That says nothing about SPECK as specified: with its real key schedule the same ' +\n  'pairs do not survive two rounds.';",
+      "replacement": "export const NEGATIVE_CLAIM =\n  'Rotational pairs pass through SPECK’s round function with high probability.';",
+      "owner": {
+        "kind": "claims",
+        "grep": "the round function has the property AND the real cipher does not"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "3055a7df20e55fd8",
+      "fileHashAfter": "bbe0752f67b22ffd",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "0eaf4ead1939f3cf",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 1,
+      "blind": null
+    },
+    {
+      "id": 14,
+      "title": "The real-schedule column fed rotated round keys by mistake (§4.1d bite 2)",
+      "why": "§4.1d requires that breaking a check inside the fixture fails assertion 2. Feeding the real-schedule column rotated round keys makes survivors appear past two rounds, so the verdict loses its second clause and the negative claim stops rendering — the page would then be claiming the limitation without the evidence for it.",
+      "file": "src/analysis/rotational.ts",
+      "anchor": "        [bx, by] = round32(bx, by, mode === 'real-schedule' ? k : rot16(k, r));",
+      "replacement": "        [bx, by] = round32(bx, by, rot16(k, r)); // MUTATION (14)",
+      "owner": {
+        "kind": "claims",
+        "grep": "the round function has the property AND the real cipher does not"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "3055a7df20e55fd8",
+      "fileHashAfter": "b2fa775542decd1f",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "53b71e096bb9ad3e",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 1,
+      "blind": null
+    },
+    {
+      "id": 15,
+      "title": "The control-boundary token degraded below WCAG 1.4.11’s 3:1",
+      "why": "A gate is only worth what a mutation proves. This restores --border-strong to #3a554d, the value this lab actually shipped until the gate measured it at 2.14:1 against --panel, and requires the a11y run to fail NAMING the non-text contrast finding. Without this, the contrast oracle could be dead and every run would still be green.",
+      "file": "src/styles.css",
+      "anchor": "  --border-strong: #5e897e;",
+      "replacement": "  --border-strong: #3a554d;",
+      "owner": {
+        "kind": "a11y",
+        "grep": "no WCAG A/AA violations in dark theme$"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "af1150580e305fcc",
+      "fileHashAfter": "b5a38cdcaada2e75",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "c2862ddd595a8bbb",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 1,
+      "blind": null,
+      "named": "non-text contrast"
+    },
+    {
+      "id": 16,
+      "title": "The global border-box removed, reintroducing the 380px reflow failure",
+      "why": "The other half of the same argument: the reflow oracle is the only check for WCAG 1.4.10, because axe has no rule for it at all. Removing border-box returns .cl-hero-why to a 384px box inside a 348px container, and the phone-width run must fail naming the horizontal scroll.",
+      "file": "src/styles.css",
+      "anchor": "*,\n*::before,\n*::after {\n  box-sizing: border-box;\n}",
+      "replacement": "*,\n*::before,\n*::after {\n  box-sizing: content-box;\n}",
+      "owner": {
+        "kind": "a11y",
+        "grep": "no WCAG A/AA violations in dark theme at 380px"
+      },
+      "verdict": "KILLED",
+      "fileHashBefore": "af1150580e305fcc",
+      "fileHashAfter": "f96843fa21b6554d",
+      "bundleBaseline": "2cd8a16ca6219739",
+      "bundleMutated": "9650fbc95c17a124",
+      "ownerRanUnmutated": 1,
+      "ownerRanMutated": 1,
+      "blind": null,
+      "named": "must not scroll horizontally"
+    }
+  ]
+}

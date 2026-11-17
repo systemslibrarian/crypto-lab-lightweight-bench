@@ -126,11 +126,12 @@ export const SKINNY_PARAMS: readonly SkinnyParams[] = [
 
 /** 16 cells, ROW-MAJOR: cell index i sits at row floor(i/4), column i mod 4. */
 export function bytesToCells(bytes: Uint8Array, s: 4 | 8): number[] {
-  if (s === 8) return Array.from(bytes);
   const cells: number[] = [];
-  for (const b of bytes) {
-    cells.push(b >> 4, b & 0xf);
-  }
+  if (s === 8) for (const b of bytes) cells.push(b);
+  else for (const b of bytes) cells.push(b >> 4, b & 0xf);
+  // Returned row-major, which is what the paper specifies and what the AES
+  // habit gets wrong. Transposing here instead is mutation (6) in the ledger:
+  // the cipher stays perfectly self-consistent and matches no published vector.
   return cells;
 }
 
