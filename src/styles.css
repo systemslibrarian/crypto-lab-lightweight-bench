@@ -454,6 +454,11 @@ button {
   font-size: 0.78rem;
   color: var(--text-muted);
   padding-bottom: 0.3rem;
+  /* A caption box is as wide as its table, and these tables are two or three
+     cells wide, so a caption wraps to a few characters a line. It is short and
+     it sits inside the `.scroll-x` region, so letting it set its own width
+     cannot push the document sideways. */
+  white-space: nowrap;
 }
 
 .scroll-x {

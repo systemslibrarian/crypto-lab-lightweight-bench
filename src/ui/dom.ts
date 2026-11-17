@@ -135,19 +135,29 @@ export function kv(pairs: { key: string; value: string; flag?: 'match' | 'mismat
   return dl;
 }
 
-/** A table with a caption, a header row and body rows. */
+/**
+ * A table with a caption, a header row and body rows.
+ *
+ * Columns from `numericFrom` up to and including `numericThrough` are set in
+ * the mono face and right-aligned. The upper bound exists because a table can
+ * have a trailing PROSE column after its numbers — exhibit 3's "Structure" is
+ * one — and right-aligning a sentence because of its position is a layout bug
+ * that looks like a style choice.
+ */
 export function dataTable(
   caption: string,
   columns: readonly string[],
   rows: readonly { cells: readonly string[]; className?: string; numeric?: boolean }[],
   numericFrom = 1,
+  numericThrough = Number.POSITIVE_INFINITY,
 ): HTMLTableElement {
   const table = el('table', { class: 'data' });
   table.appendChild(el('caption', { text: caption }));
   const thead = el('thead');
   const hr = el('tr');
+  const isNum = (i: number) => i >= numericFrom && i <= numericThrough;
   columns.forEach((c, i) =>
-    hr.appendChild(el('th', { text: c, class: i >= numericFrom ? 'num' : '', attrs: { scope: 'col' } })),
+    hr.appendChild(el('th', { text: c, class: isNum(i) ? 'num' : '', attrs: { scope: 'col' } })),
   );
   thead.appendChild(hr);
   table.appendChild(thead);
@@ -156,7 +166,7 @@ export function dataTable(
     const tr = el('tr', { class: r.className ?? '' });
     r.cells.forEach((cell, i) => {
       if (i === 0) tr.appendChild(el('th', { text: cell, attrs: { scope: 'row' } }));
-      else tr.appendChild(el('td', { text: cell, class: i >= numericFrom ? 'num' : '' }));
+      else tr.appendChild(el('td', { text: cell, class: isNum(i) ? 'num' : '' }));
     });
     tbody.appendChild(tr);
   }

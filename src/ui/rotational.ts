@@ -37,6 +37,16 @@ import { button, clear, dataTable, el, field, scrollX, select, sourceNote, textI
 
 const MAX_ROUNDS = 6;
 
+/**
+ * The cap's exponent, DERIVED from the cap.
+ *
+ * It was written out beside it as a literal "(2^26)" until the cap moved to
+ * 2^24 and the page carried on printing the old exponent next to the new
+ * number. A number and a restatement of the same number must not be able to
+ * disagree.
+ */
+const CAP_EXPONENT = Math.log2(SAMPLE_CAP);
+
 /** Two validated categorical hues for the dark chart surface (#121c19). */
 const SERIES_ROUND_FN = '#199e70';
 const SERIES_REAL = '#d95926';
@@ -76,7 +86,7 @@ export function renderRotational(root: HTMLElement): void {
   );
   controls.appendChild(
     field('Samples per point (run 3)', samplesInput, {
-      hint: `Capped at ${SAMPLE_CAP.toLocaleString()} (2^26) so the worker finishes. The cap is stated when it bites.`,
+      hint: `Capped at ${SAMPLE_CAP.toLocaleString()} (2^${CAP_EXPONENT}) so the worker finishes. The cap is stated when it bites.`,
     }),
   );
   root.appendChild(controls);
@@ -243,7 +253,7 @@ export function renderRotational(root: HTMLElement): void {
           'rot-sample-capped',
           'SAMPLE COUNT CAPPED',
           `You asked for ${requested.toLocaleString()} samples per point. The worker’s budget is ` +
-            `${SAMPLE_CAP.toLocaleString()} (2^26), so the run below uses ${capped.samples.toLocaleString()}.`,
+            `${SAMPLE_CAP.toLocaleString()} (2^${CAP_EXPONENT}), so the run below uses ${capped.samples.toLocaleString()}.`,
         ),
       );
     }
@@ -546,7 +556,10 @@ function survivalChart(
   const W = 680;
   const H = 320;
   const padL = 56;
-  const padR = 118;
+  // Wide enough for the legend's longest line: it starts at W - padR + 24 and
+  // the 10px note runs about 115px, so anything under ~140 clips it against
+  // the viewBox edge with no overflow and no warning.
+  const padR = 152;
   const padT = 18;
   const padB = 44;
   const floor = Math.log2(1 / samples);

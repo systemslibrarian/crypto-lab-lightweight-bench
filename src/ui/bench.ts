@@ -276,6 +276,21 @@ function refusal(e: unknown): HTMLElement {
   return verdict('bad', 'bench-refused', 'REFUSED', message);
 }
 
+/**
+ * A short caption (the table's accessible name) plus the explanation beside it.
+ *
+ * The explanation used to BE the caption, and a `<caption>` box is as wide as
+ * its table — so a full sentence over a two-column word grid wrapped to about
+ * twelve characters a line. The sentence is a sibling now; the caption stays
+ * because it is what names the table.
+ */
+function gridBlock(caption: string, note: string, table: HTMLElement, label: string): HTMLElement {
+  table.insertBefore(el('caption', { text: caption }), table.firstChild);
+  return el('div', {
+    children: [el('p', { class: 'hint', text: note }), scrollX(label, table)],
+  });
+}
+
 /** The ciphertext as the grid its own paper would draw. */
 function stateGrid(v: CipherVariant, hex: string): HTMLElement {
   const layout = v.layout;
@@ -284,11 +299,6 @@ function stateGrid(v: CipherVariant, hex: string): HTMLElement {
     const per = layout.bits / 4;
     for (let i = 0; i < 16; i++) cells.push(hex.slice(i * per, i * per + per));
     const table = el('table', { class: 'state-grid' });
-    table.appendChild(
-      el('caption', {
-        text: `Ciphertext as SKINNY’s 4 × 4 state. Cells are numbered ROW BY ROW: cell 0 is row 0 column 0, cell 4 is row 1 column 0.`,
-      }),
-    );
     const head = el('tr');
     head.appendChild(el('th', { text: '', attrs: { scope: 'col' } }));
     for (let c = 0; c < 4; c++) head.appendChild(el('th', { text: `col ${c}`, attrs: { scope: 'col' } }));
@@ -299,12 +309,17 @@ function stateGrid(v: CipherVariant, hex: string): HTMLElement {
       for (let c = 0; c < 4; c++) tr.appendChild(el('td', { text: cells[r * 4 + c] }));
       table.appendChild(tr);
     }
-    return scrollX('Ciphertext state grid', table);
+    return gridBlock(
+      `${v.label} ciphertext as a 4 × 4 state`,
+      'Cells are numbered ROW BY ROW, which is SKINNY’s order and not the AES’s: cell 0 is row 0 ' +
+        'column 0, and cell 4 is row 1 column 0, not row 0 column 1.',
+      table,
+      'Ciphertext state grid',
+    );
   }
   if (layout.kind === 'words') {
     const per = layout.bits / 4;
     const table = el('table', { class: 'state-grid' });
-    table.appendChild(el('caption', { text: `Ciphertext as two ${layout.bits}-bit words, (x, y), x on the left.` }));
     const head = el('tr');
     head.appendChild(el('th', { text: 'x', attrs: { scope: 'col' } }));
     head.appendChild(el('th', { text: 'y', attrs: { scope: 'col' } }));
@@ -313,12 +328,14 @@ function stateGrid(v: CipherVariant, hex: string): HTMLElement {
     tr.appendChild(el('td', { text: hex.slice(0, per) }));
     tr.appendChild(el('td', { text: hex.slice(per) }));
     table.appendChild(tr);
-    return scrollX('Ciphertext word pair', table);
+    return gridBlock(
+      `${v.label} ciphertext as two ${layout.bits}-bit words`,
+      'The block is the word pair (x, y) with x on the left, exactly as ePrint 2013/404 prints it.',
+      table,
+      'Ciphertext word pair',
+    );
   }
   const table = el('table', { class: 'state-grid' });
-  table.appendChild(
-    el('caption', { text: `Ciphertext as ${layout.count} nibbles, most significant first.` }),
-  );
   const head = el('tr');
   const row = el('tr');
   for (let i = 0; i < layout.count; i++) {
@@ -327,7 +344,12 @@ function stateGrid(v: CipherVariant, hex: string): HTMLElement {
   }
   table.appendChild(head);
   table.appendChild(row);
-  return scrollX('Ciphertext nibbles', table);
+  return gridBlock(
+    `${v.label} ciphertext as ${layout.count} nibbles`,
+    'Numbered most significant first, which is the order both GIFT and PRINCE specify.',
+    table,
+    'Ciphertext nibbles',
+  );
 }
 
 /**

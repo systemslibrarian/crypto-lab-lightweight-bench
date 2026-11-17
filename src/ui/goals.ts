@@ -59,6 +59,7 @@ export function renderGoals(root: HTMLElement): void {
         ['Family', 'Stated goal', 'Block sizes', 'Key sizes', 'Rounds', 'Structure'],
         rows,
         2,
+        4, // "Structure" is prose; only columns 2-4 are numbers.
       ),
     ),
   );
