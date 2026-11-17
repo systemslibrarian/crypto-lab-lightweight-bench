@@ -5,3 +5,7 @@ playwright-report/
 chat.md
 .DS_Store
 vitest-results.json
+
+# The build standard. It lives in the catalog repo at audits/_MASTER-TEMPLATE.md;
+# a per-lab copy is working material, not something to publish.
+_MASTER-TEMPLATE.md
