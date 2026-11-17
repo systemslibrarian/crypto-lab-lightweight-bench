@@ -1,0 +1,663 @@
+/**
+ * Lightweight Bench — stylesheet.
+ *
+ * Dark is the only theme (there is no toggle and no `prefers-color-scheme`
+ * anywhere in this file). Three rules shaped most of what follows:
+ *
+ *  - No text ever sits on a `color-mix()` or a gradient. axe declines to
+ *    compute contrast over an unresolved `color-mix()` and parks the decision
+ *    in its `incomplete` bucket, where it reads as a pass without being one.
+ *    Every surface that carries text here is a flat hex token.
+ *  - Muted text lowers LIGHTNESS; `opacity` is never used to dim text, because
+ *    it changes the rendered colour without changing the computed one.
+ *  - State is never colour alone: every verdict carries an icon glyph and a
+ *    word as well as a hue (WCAG 1.4.1).
+ */
+
+:root {
+  /* The catalog accent for this lab. The top bar reads it too. */
+  --accent: #7fb7a4;
+
+  --bg: #0d1412;
+  --panel: #121c19;
+  --panel-2: #16211d;
+  --inset: #0a110f;
+  --border: #273a35;
+  --border-strong: #3a554d;
+
+  --text: #e6f2ee;
+  --text-dim: #a8bfb8;
+  --text-muted: #91a9a2;
+
+  /* Ink for text sitting ON the accent fill: 8.4:1 against #7fb7a4. */
+  --ink-on-accent: #07110e;
+
+  --ok: #7fd4a8;
+  --alarm: #ff9b86;
+  --warn: #e8c070;
+  --ok-wash: #11241b;
+  --alarm-wash: #2a1512;
+  --warn-wash: #251e10;
+  --accent-wash: #16241f;
+
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+html {
+  /* The longhand, deliberately: axe and WebKit both miss the shorthand. */
+  background-color: var(--bg);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+}
+
+#app {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 2rem) 3rem;
+}
+
+/* Base type rules are scoped to #app so they never fight the always-dark
+   top bar, which is self-contained. */
+#app p {
+  margin: 0 0 0.8rem;
+}
+#app h2 {
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  margin: 0 0 0.6rem;
+  letter-spacing: 0.01em;
+}
+#app h3 {
+  font-size: 1rem;
+  margin: 1.4rem 0 0.5rem;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+#app h4 {
+  font-size: 0.92rem;
+  margin: 1rem 0 0.4rem;
+  color: var(--text);
+}
+#app a {
+  color: var(--accent);
+  /* A persistent underline, not colour alone. */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+#app a:hover {
+  color: var(--text);
+}
+#app code,
+#app kbd {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background-color: var(--inset);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+}
+#app :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- hero (the fleet-standard block) ---------- */
+
+.cl-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(1rem, 4vw, 3rem);
+  flex-wrap: wrap;
+  margin: clamp(1rem, 3vw, 2rem) 0 1.5rem;
+}
+.cl-hero-main {
+  flex: 1 1 22rem;
+  min-width: min(100%, 20rem);
+}
+.cl-hero-title {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.8vw, 2.7rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+.cl-hero-sub {
+  margin: 0.4rem 0 0;
+  font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+  letter-spacing: 0.01em;
+  color: var(--text-dim);
+}
+.cl-hero-desc {
+  margin: 0.55rem 0 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+  max-width: 60ch;
+}
+.cl-hero-why {
+  flex: 0 1 min(40%, 26rem);
+  min-width: min(100%, 15rem);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1.05rem;
+  /* A flat token, not a color-mix: text sits on this. */
+  background-color: var(--accent-wash);
+}
+.cl-hero-why-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+.cl-hero-why-text {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .cl-hero {
+    flex-direction: column;
+  }
+  /* Both halves must reset: `flex: 1 1 22rem` is a ROW basis, and once the
+     direction is column that 22rem is read as a HEIGHT, reserving dead space
+     under the title at every width below 640px. */
+  .cl-hero-main {
+    flex-basis: auto;
+    min-width: 0;
+  }
+  .cl-hero-why {
+    flex-basis: auto;
+    width: 100%;
+  }
+}
+
+/* ---------- cards ---------- */
+
+.intro-card,
+.scope-card,
+.panel {
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: clamp(0.9rem, 2.5vw, 1.4rem);
+  margin: 1.2rem 0;
+}
+.intro-card {
+  background-color: var(--panel-2);
+}
+.scope-card ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.scope-card li {
+  margin-bottom: 0.5rem;
+  color: var(--text-dim);
+}
+.scope-card li strong {
+  color: var(--text);
+}
+
+/* ---------- tabs ---------- */
+
+.tabs {
+  margin: 1.2rem 0 0;
+}
+.tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.tab-btn {
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  min-height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background-color: var(--panel);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.tab-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.tab-btn[aria-selected='true'] {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink-on-accent);
+}
+
+/* ---------- controls ---------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.field > label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.field-grow {
+  flex: 1 1 22rem;
+}
+input[type='text'],
+input[type='number'],
+select,
+textarea {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 0.5rem 0.6rem;
+  min-height: 44px;
+  background-color: var(--inset);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+textarea {
+  resize: vertical;
+  min-height: 3.5rem;
+}
+select {
+  /* A styled select needs its own chevron once the native one is removed. */
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+    linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.1rem) calc(50% + 2px),
+    calc(100% - 0.7rem) calc(50% + 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+}
+button {
+  font: inherit;
+}
+.btn {
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.55rem 1rem;
+  min-height: 44px;
+  border-radius: 9px;
+  border: 1px solid var(--accent);
+  background-color: var(--accent);
+  color: var(--ink-on-accent);
+  cursor: pointer;
+}
+.btn:hover {
+  background-color: var(--text);
+  border-color: var(--text);
+}
+.btn-secondary {
+  background-color: transparent;
+  color: var(--accent);
+  border-color: var(--border-strong);
+}
+.btn-secondary:hover {
+  background-color: var(--accent-wash);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.btn:disabled {
+  cursor: not-allowed;
+  background-color: var(--panel-2);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.8rem 0;
+}
+
+.hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0.2rem 0 0;
+}
+
+/* ---------- verdicts ---------- */
+
+.verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  margin: 0.8rem 0;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+}
+.verdict-icon {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+.verdict-body {
+  min-width: 0;
+}
+.verdict-word {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.verdict-note {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.86rem;
+  color: var(--text-dim);
+}
+.verdict-ok {
+  border-color: var(--ok);
+  background-color: var(--ok-wash);
+}
+.verdict-ok .verdict-icon,
+.verdict-ok .verdict-word {
+  color: var(--ok);
+}
+.verdict-bad {
+  border-color: var(--alarm);
+  background-color: var(--alarm-wash);
+}
+.verdict-bad .verdict-icon,
+.verdict-bad .verdict-word {
+  color: var(--alarm);
+}
+.verdict-warn {
+  border-color: var(--warn);
+  background-color: var(--warn-wash);
+}
+.verdict-warn .verdict-icon,
+.verdict-warn .verdict-word {
+  color: var(--warn);
+}
+.verdict-info {
+  border-color: var(--accent);
+  background-color: var(--accent-wash);
+}
+.verdict-info .verdict-icon,
+.verdict-info .verdict-word {
+  color: var(--accent);
+}
+
+/* ---------- state grids ---------- */
+
+.state-grid {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  border-collapse: collapse;
+  margin: 0.4rem 0;
+}
+.state-grid th,
+.state-grid td {
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.5rem;
+  text-align: right;
+}
+.state-grid th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  background-color: var(--inset);
+}
+.state-grid caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding-bottom: 0.3rem;
+}
+
+.scroll-x {
+  overflow-x: auto;
+  /* A scrollable region needs to be reachable and named; the role and label
+     are set in the markup that renders these. */
+}
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+table.data th,
+table.data td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+table.data thead th {
+  background-color: var(--inset);
+  color: var(--text);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+table.data td.num,
+table.data th.num {
+  text-align: right;
+  font-family: var(--mono);
+}
+table.data tr.on-bench td:first-child {
+  color: var(--accent);
+  font-weight: 700;
+}
+table.data caption {
+  caption-side: top;
+  text-align: left;
+  color: var(--text-dim);
+  font-size: 0.86rem;
+  padding-bottom: 0.5rem;
+}
+.mono {
+  font-family: var(--mono);
+}
+.wrap-any {
+  overflow-wrap: anywhere;
+}
+
+.source-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0.3rem 0 0;
+}
+
+/* ---------- round tracer ---------- */
+
+.trace-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.8rem;
+}
+.trace-col {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.6rem 0.7rem;
+  background-color: var(--panel-2);
+  min-width: 0;
+}
+.trace-col h4 {
+  margin: 0 0 0.1rem;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+.trace-goal {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.trace-step {
+  border-top: 1px solid var(--border);
+  padding: 0.4rem 0;
+}
+.trace-step:first-of-type {
+  border-top: 0;
+}
+.trace-op {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.trace-state {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+  margin-top: 0.1rem;
+}
+.trace-note {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+.trace-step.changed .trace-state {
+  color: var(--text);
+  background-color: var(--accent-wash);
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+}
+
+/* ---------- chart (exhibit 5) ---------- */
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  margin: 0.5rem 0;
+}
+.progress-line {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+progress {
+  width: 100%;
+  height: 0.5rem;
+}
+
+details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  margin: 0.8rem 0;
+  background-color: var(--panel-2);
+}
+details > summary {
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+details[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
+.negative-claim {
+  border: 1px solid var(--warn);
+  border-left-width: 4px;
+  border-radius: 8px;
+  background-color: var(--warn-wash);
+  padding: 0.7rem 0.9rem;
+  margin: 0.9rem 0;
+}
+.negative-claim-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--warn);
+  margin-bottom: 0.25rem;
+}
+
+.vector-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.vector-list > li {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 0.5rem;
+  background-color: var(--panel-2);
+}
+.kv {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, auto) 1fr;
+  gap: 0.15rem 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+.kv dt {
+  color: var(--text-muted);
+}
+.kv dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.kv dd.match {
+  color: var(--ok);
+}
+.kv dd.mismatch {
+  color: var(--alarm);
+}
+
+/* ---------- footer ---------- */
+
+.scripture-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.88rem;
+}
+.scripture-footer .footer-links {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+/* Motion is tied to an action, never idle. The one transition the page uses is
+   cancelled here WITH its end state intact, so a reduced-motion reader sees the
+   finished rendering rather than a frame frozen part-way. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
