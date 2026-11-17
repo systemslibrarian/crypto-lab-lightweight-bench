@@ -64,21 +64,32 @@ jobs:
         # sweep found 29 repos running `test:a11y` alone, so their algorithmic
         # suites never blocked a deploy. Here that would mean publishing a page
         # whose ciphers no longer reproduce a single published vector.
-        run: npm test 2>&1 | tee vitest.log
+        #
+        # The JSON reporter runs ALONGSIDE the default one, so the log stays
+        # readable and the next step gets a machine-readable count. Scraping the
+        # human summary instead is what the first version of this did, and it
+        # failed on its first CI run: vitest colours that line, so the leading
+        # ANSI escape defeated a `^\s*Tests` match and the guard reported zero
+        # passing tests for a suite that had just passed 162.
+        run: npm test -- --reporter=default --reporter=json --outputFile=vitest-results.json
 
       - name: Fail if the test runner ran zero tests
-        # A test step that runs zero tests exits 0. Asserting the COUNT rather
-        # than the exit code is the only thing that catches a glob that stopped
-        # matching — see §4.1e.
+        # A test step that runs zero tests exits 0 — `node --test` can load none
+        # of your files and report success. Asserting the COUNT is the only
+        # thing that catches a glob that stopped matching (§4.1e).
         run: |
           set -eu
-          line=$(grep -E '^\s*Tests\s+' vitest.log | tail -1 || true)
-          echo "runner summary: ${line:-<none>}"
-          count=$(printf '%s' "$line" | grep -oE '[0-9]+ passed' | grep -oE '[0-9]+' || echo 0)
-          if [ "${count:-0}" -lt 150 ]; then
-            echo "::error::Vitest reported ${count:-0} passing tests; this suite has over 150. The glob or the runner changed."
-            exit 1
-          fi
+          node -e '
+            const r = require("./vitest-results.json");
+            const passed = r.numPassedTests ?? 0;
+            const failed = r.numFailedTests ?? 0;
+            console.log(`runner reported ${passed} passed, ${failed} failed, ${r.numTotalTests} total`);
+            if (failed > 0) { console.log(`::error::${failed} test(s) failed`); process.exit(1); }
+            if (passed < 150) {
+              console.log(`::error::Vitest reported ${passed} passing tests; this suite has over 150. The glob or the runner changed.`);
+              process.exit(1);
+            }
+          '
 
       - name: Build (typecheck gates the build)
         run: npm run build
