@@ -188,8 +188,17 @@ export function exhaustiveChain(
   return { n, r, additions, survivors, total: size ** words, exhaustive: true };
 }
 
-/** The worker's sampling budget, stated on the page whenever it bites. */
-export const SAMPLE_CAP = 1 << 26;
+/**
+ * The worker's sampling budget, stated on the page whenever it bites.
+ *
+ * Exhibit 5's SPECK run is twelve jobs (two key models x six round counts), and
+ * the work is proportional to the round count, so one run costs
+ * 2 * (1+2+3+4+5+6) = 42 round-units per sample. At 2^26 that measured about
+ * two minutes in a browser worker with no way to interrupt it, which is a worse
+ * experience than it is an experiment. 2^24 is about ten seconds and is still
+ * four times the 2^22 per point that the published-figure comparison needs.
+ */
+export const SAMPLE_CAP = 1 << 24;
 export const SAMPLE_DEFAULT = 1 << 22;
 
 export function capSamples(requested: number): { samples: number; capped: boolean } {

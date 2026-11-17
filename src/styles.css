@@ -23,7 +23,12 @@
   --panel-2: #16211d;
   --inset: #0a110f;
   --border: #273a35;
-  --border-strong: #3a554d;
+  /* Control boundaries must clear WCAG 1.4.11's 3:1 against every surface a
+     control sits on. #3a554d, the first choice here, measured 2.14:1 against
+     --panel and 2.30:1 against --bg: a token is only a declaration, and this
+     one was wrong. #5e897e measures 4.10:1 against the darkest surface on the
+     page, which leaves margin for a rounding difference between engines. */
+  --border-strong: #5e897e;
 
   --text: #e6f2ee;
   --text-dim: #a8bfb8;
@@ -41,6 +46,22 @@
   --accent-wash: #16241f;
 
   --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+/*
+ * Border-box everywhere, and this is a reflow fix rather than a preference.
+ * Under the default `content-box`, `.cl-hero-why`'s `width: 100%` from the
+ * fleet hero snippet resolves against the flex container and then ADDS its own
+ * 1.05rem side padding and 1px borders on top — 348px of container became a
+ * 384px box, the document grew to 400px, and the page scrolled sideways at
+ * 380px against WCAG 1.4.10. Every padded full-width block on this page has
+ * that shape, so the fix belongs here rather than on the one element that was
+ * caught.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html {
@@ -276,7 +297,6 @@ textarea {
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   width: 100%;
-  box-sizing: border-box;
 }
 textarea {
   resize: vertical;
