@@ -63,7 +63,7 @@ ranks nothing.
    chained additions counted exhaustively at 8 bits against the folklore estimate; then SPECK32/64
    for one to six rounds in two key models, sampled, with the sample size printed beside every
    figure.
-6. **SKINNY takes a tweak.** Same key, same plaintext, two tweaks, unrelated ciphertext — with the
+6. **SKINNY takes a tweak.** Same key, same plaintext, two tweaks, measured ciphertext difference — with the
    Hamming distance computed rather than described.
 
 ## When to Use It
@@ -91,7 +91,7 @@ Encrypt a block under any of 29 cipher versions and decrypt it again; click thro
 designers' vectors and watch each comparison run; trace one round of all five families on the same
 input; make PRINCE decrypt with its encryption circuit and then break α by one bit; count all 2³²
 rotational pairs at 16 bits and watch the number arrive; sample SPECK's two key models and read the
-difference the key schedule makes; and change a SKINNY tweak to get an unrelated ciphertext under
+difference the key schedule makes; and change a SKINNY tweak to measure the ciphertext difference under
 the same key.
 
 ## What Can Go Wrong

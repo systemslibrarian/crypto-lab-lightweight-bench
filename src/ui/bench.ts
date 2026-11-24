@@ -223,7 +223,7 @@ export function renderBench(root: HTMLElement): void {
     const key = parseHex(keyInput.value, v.keyBits, 'key');
     const back = toHex(v.decrypt(parseHex(ctHex, v.blockBits, 'ciphertext'), key));
     const ok = back === ptHex;
-    const existing = output.querySelector('[data-verdict="bench-roundtrip"]');
+    const existing = output.querySelector('[data-claim="bench-decrypted"]');
     if (existing) existing.remove();
     output.appendChild(
       el('div', {
@@ -244,7 +244,15 @@ export function renderBench(root: HTMLElement): void {
 
   vectorsBtn.addEventListener('click', () => {
     clear(vectorsOut);
-    renderVectorCheck(vectorsOut, state.variant, keyInput, blockInput);
+    renderVectorCheck(vectorsOut, state.variant, (key, block) => {
+      if (keyInput.value === key && blockInput.value === block) return;
+      keyInput.value = key;
+      blockInput.value = block;
+      if (output.childElementCount > 0) {
+        clear(output);
+        output.appendChild(verdict('info', 'bench-retired', 'VERDICT RETIRED', 'The published vector was loaded. Encrypt it to see its ciphertext.'));
+      }
+    });
   });
 
   loadSizes();
@@ -363,8 +371,7 @@ function stateGrid(v: CipherVariant, hex: string): HTMLElement {
 function renderVectorCheck(
   root: HTMLElement,
   v: CipherVariant,
-  keyInput: HTMLInputElement,
-  blockInput: HTMLInputElement,
+  loadInputs: (key: string, block: string) => void,
 ): void {
   root.appendChild(el('h3', { text: `The designers’ vectors for ${v.label}` }));
 
@@ -426,8 +433,7 @@ function renderVectorCheck(
   const load = button('bench-load-vector', 'Load the first vector into the controls above', { secondary: true });
   load.addEventListener('click', () => {
     const t = v.vectors[0];
-    keyInput.value = t.keyHex;
-    blockInput.value = t.plainHex;
+    loadInputs(t.keyHex, t.plainHex);
   });
   root.appendChild(load);
 }

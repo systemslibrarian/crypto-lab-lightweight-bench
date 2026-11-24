@@ -262,6 +262,21 @@ test.describe('retirement, and the no-op guard', () => {
     await expect(page.locator('#bench-output [data-verdict="bench-retired"]')).toHaveCount(0);
   });
 
+  test('loading a published vector retires a result for another block', async ({ page }) => {
+    await boot(page, 'dark');
+    await page.locator('#bench-random').click();
+    await page.locator('#bench-encrypt').click();
+    await page.locator('#bench-decrypt').click();
+    await page.locator('#bench-decrypt').click();
+    await expect(page.locator('[data-claim="bench-decrypted"]')).toHaveCount(1);
+    await page.locator('#bench-check-vectors').click();
+    await page.locator('#bench-load-vector').click();
+    await expect(page.locator('[data-claim="bench-ciphertext"]')).toHaveCount(0);
+    await expect(page.locator('[data-verdict="bench-retired"]')).toBeVisible();
+    await page.locator('#bench-encrypt').click();
+    await expect(page.locator('[data-claim="bench-ciphertext"]')).toBeVisible();
+  });
+
   test('changing the rotation amount retires exhibit 5’s counts', async ({ page }) => {
     await boot(page, 'dark');
     await openPanel(page, /Rotational Pairs/, '#panel-rotational');
@@ -584,7 +599,7 @@ test.describe('exhibit 6 — the tweak claim', () => {
 
     // And the verdict quotes the number it computed.
     const verdict = page.locator('#tweak-output [data-verdict="tweak-verdict"]');
-    await expect(verdict).toContainText('SAME KEY, SAME PLAINTEXT, UNRELATED CIPHERTEXT');
+    await expect(verdict).toContainText('SAME KEY, SAME PLAINTEXT, DIFFERENT CIPHERTEXT');
     await expect(verdict).toContainText(`${shownCipherDistance} of ${blockBits} bits`);
   });
 

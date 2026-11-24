@@ -146,6 +146,9 @@ export function renderRounds(root: HTMLElement): void {
     out.appendChild(notes);
   }
 
+  for (const input of [blockInput, keyInput]) {
+    input.addEventListener('input', () => { out.textContent = 'Inputs changed. Trace the round again to see the new states.'; });
+  }
   traceBtn.addEventListener('click', draw);
   randomBtn.addEventListener('click', () => {
     blockInput.value = randomHex(64);

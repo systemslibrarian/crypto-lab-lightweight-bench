@@ -69,7 +69,7 @@ export function renderTweak(root: HTMLElement): void {
       text:
         'A tweakable block cipher has a third input besides the key and the block. The tweak is PUBLIC — ' +
         'it can be a disk sector number, a record index, a counter — and changing it gives you a different ' +
-        'permutation without touching the key or paying for a key schedule again. Of the five ciphers here, ' +
+        'permutation for the same secret key. This implementation processes the combined key and tweak on each encryption. Of the five ciphers here, ' +
         'only SKINNY is built this way.',
     }),
   );
@@ -108,12 +108,12 @@ export function renderTweak(root: HTMLElement): void {
 
   const tweaks = el('div', { class: 'controls' });
   tweaks.appendChild(
-    field(`Tweak A (hex, up to ${TWEAK_BITS / 4} digits)`, tweakA, {
+    field(`Tweak A (hex, ${TWEAK_BITS / 4} digits)`, tweakA, {
       grow: true,
       hint: `Loaded as TK2. ${TWEAK_BITS} bits of room with a ${KEY_BITS}-bit key.`,
     }),
   );
-  tweaks.appendChild(field(`Tweak B (hex, up to ${TWEAK_BITS / 4} digits)`, tweakB, { grow: true }));
+  tweaks.appendChild(field(`Tweak B (hex, ${TWEAK_BITS / 4} digits)`, tweakB, { grow: true }));
   root.appendChild(tweaks);
 
   const actions = el('div', { class: 'btn-row' });
@@ -203,16 +203,16 @@ export function renderTweak(root: HTMLElement): void {
 
     out.appendChild(
       verdict(
-        same ? 'bad' : 'ok',
+        same ? 'info' : 'ok',
         'tweak-verdict',
         same
           ? 'DIFFERENT TWEAKS GAVE THE SAME CIPHERTEXT'
-          : 'SAME KEY, SAME PLAINTEXT, UNRELATED CIPHERTEXT',
+          : 'SAME KEY, SAME PLAINTEXT, DIFFERENT CIPHERTEXT',
         same
-          ? 'Two different tweaks produced the same ciphertext, which would mean the tweak is not reaching the cipher.'
+          ? 'Two tweak settings can produce the same output for one plaintext. This observation alone cannot tell whether the permutations differ elsewhere.'
           : `The tweaks differ in ${tweakDistance} bit${tweakDistance === 1 ? '' : 's'}; the ciphertexts differ in ` +
             `${cipherDistance} of ${variant.blockBits} bits. For an unrelated pair of ${variant.blockBits}-bit blocks you would ` +
-            `expect about ${variant.blockBits / 2}. The key never changed and no key schedule was re-run.`,
+            `expect about ${variant.blockBits / 2}. This measurement describes one pair of outputs.`,
       ),
     );
 
@@ -221,12 +221,15 @@ export function renderTweak(root: HTMLElement): void {
         class: 'hint',
         text:
           'Note what this is NOT: it is not a proof that SKINNY is a secure tweakable cipher. One pair of ' +
-          'blocks shows the tweak reaches the state; the security argument is in the paper’s related-tweakey ' +
+          'blocks measures the output distance for these inputs; the security argument is in the paper’s related-tweakey ' +
           'bounds, not here.',
       }),
     );
   }
 
+  for (const input of [keyInput, blockInput, tweakA, tweakB]) {
+    input.addEventListener('input', () => { out.textContent = 'Inputs changed. Encrypt under both tweaks to compare again.'; });
+  }
   runBtn.addEventListener('click', run);
 
   oneBitBtn.addEventListener('click', () => {
