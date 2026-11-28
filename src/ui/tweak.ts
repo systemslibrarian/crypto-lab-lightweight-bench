@@ -69,8 +69,8 @@ export function renderTweak(root: HTMLElement): void {
       text:
         'A tweakable block cipher has a third input besides the key and the block. The tweak is PUBLIC — ' +
         'it can be a disk sector number, a record index, a counter — and changing it gives you a different ' +
-        'permutation for the same secret key. This implementation processes the combined key and tweak on each encryption. Of the five ciphers here, ' +
-        'only SKINNY is built this way.',
+        'permutation for the same secret key. This exhibit uses SKINNY-64-128 with 64 bits of secret key and 64 bits of public tweak. ' +
+        'Both values enter the tweakey schedule on each encryption.',
     }),
   );
 

@@ -2,7 +2,7 @@
  * Exhibit 2 — Round functions side by side.
  *
  * All five families have a 64-bit block version, so one 64-bit block can go
- * through all five first rounds and the columns are genuinely comparable:
+ * through all five first rounds to align the columns for structural inspection:
  * SIMON 64/128, SPECK 64/128, GIFT-64, SKINNY-64-64 and PRINCE.
  *
  * The keys are not the same length, and the page says so rather than hiding it:
@@ -28,8 +28,8 @@ export function renderRounds(root: HTMLElement): void {
     el('p', {
       text:
         'Every family here has a 64-bit block version, so the same block can be pushed through all five ' +
-        'first rounds and the columns compared. Read down a column and you are reading what that design ' +
-        'chose to spend its gates on — and what it refused to spend them on.',
+        'first rounds. Read down each column to see its operations in order. The state encodings and key inputs differ ' +
+        'across designs, so compare the operations each design uses on the shared input block.',
     }),
   );
 

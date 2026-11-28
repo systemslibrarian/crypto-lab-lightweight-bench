@@ -28,7 +28,7 @@ Five families, 29 versions, all implemented from their design papers:
 | **SKINNY** | 64-64, 64-128, 64-192, 128-128, 128-256, 128-384 | **6** | ePrint 2016/660, Appendix B.1 |
 | **PRINCE** | 64-bit block, 128-bit key | **5** | ePrint 2012/529, Appendix A |
 
-**37 published vectors, and all 37 reproduce in the browser** — encryption and decryption both.
+**37 reference vectors reproduce in the browser** for encryption and decryption. Six GIFT vectors come from the pinned designers’ repository. The other 31 come from the papers listed above.
 Decryption is implemented for every size and round-trips on random blocks.
 
 Two properties are demonstrated rather than asserted:
@@ -36,8 +36,8 @@ Two properties are demonstrated rather than asserted:
 1. **PRINCE's α-reflection.** Decryption is the *encryption* circuit with the two whitening keys
    swapped and the constant α added to the core key. The page runs both routes and compares them,
    then runs the same thing with one bit of α flipped as a negative control.
-2. **Rotational pairs through SPECK.** A property of the round function that looks like a
-   weakness, and that the key schedule's round counter removes entirely.
+2. **Rotational pairs through SPECK.** The two key schedules are compared on a finite sample. The table reports
+   how many pairs survived each round in that run.
 
 **Not production crypto — a teaching demo.** None of these implementations is constant-time, none
 is side-channel hardened, and none should encrypt anything you care about. The page says so, and
@@ -131,23 +131,13 @@ dangerous: nothing short of a published vector catches them. Each is a concrete 
 
 ## Real-World Usage
 
-Only what was verified from the standards bodies' own catalogue entries. Where there is nothing to
-report, nothing is reported.
+The following ISO and NIST records were checked on 28 November 2026.
 
-- **SIMON** is standardised as an RFID air-interface crypto suite: **ISO/IEC 29167-21:2018**
-  (published October 2018), withdrawn 6 March 2026 and replaced by **ISO/IEC 29167-21:2026**.
-- **SPECK** likewise: **ISO/IEC 29167-22:2018** (published 6 November 2018), withdrawn 6 March
-  2026 and replaced by **ISO/IEC 29167-22:2026**.
-- **SIMON and SPECK were REJECTED from ISO/IEC 29192-2.** Proposed in 2015, and after about three
-  and a half years of deliberation in ISO/IEC JTC 1 they were turned down in **April 2018**.
-- **ISO/IEC 29192-2:2019** — the lightweight block cipher standard — specifies **PRESENT, CLEFIA
-  and LEA**. None of the five ciphers on this bench is in it.
-- **NIST's Lightweight Cryptography process** named ten finalists in **March 2021**, among them
-  **GIFT-COFB** and **Romulus**. NIST selected **Ascon** on **7 February 2023** (NIST IR 8454, June
-  2023), published as **NIST SP 800-232** in **August 2025**. Neither GIFT-COFB nor Romulus was
-  selected.
-- **PRINCE, SKINNY and GIFT**: no standard including them was found. Nothing further is claimed
-  about deployment of any of the five, because nothing further was verified.
+- ISO specifies RFID air-interface suites for [SIMON (ISO/IEC 29167-21:2026)](https://www.iso.org/standard/89591.html)
+  and [SPECK (ISO/IEC 29167-22:2026)](https://www.iso.org/standard/89590.html). Both editions replace the corresponding 2018 editions.
+- The separate lightweight block cipher standard specifies PRESENT, CLEFIA and LEA. [ISO/IEC 29192-2:2019](https://www.iso.org/standard/78477.html)
+- GIFT-COFB and Romulus were finalists in NIST's lightweight cryptography process. GIFT-COFB uses GIFT-128, and the Romulus family uses SKINNY. The bench implements the underlying block ciphers. NIST selected Ascon on 7 February 2023. [NIST final-round report](https://csrc.nist.gov/pubs/ir/8454/final)
+- The ISO and NIST records checked did not identify PRINCE, SKINNY or GIFT as standalone block cipher standards.
 
 ## How to Run Locally
 

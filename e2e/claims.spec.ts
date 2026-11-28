@@ -352,17 +352,17 @@ test.describe('exhibit 4 — the reflection claim and its control', () => {
     );
   });
 
-  test('the negative control agrees zero times, and says so', async ({ page }) => {
+  test('the negative control reports the observed count across the sampled trials', async ({ page }) => {
     await boot(page, 'dark');
     await openPanel(page, /PRINCE Backwards/, '#panel-reflection');
     await page.getByRole('button', { name: /Negative control/ }).click();
     const holder = page.locator('#reflect-output [data-claim="reflect-control"]');
-    expect(await holder.getAttribute('data-agreed')).toBe('0');
+    const agreed = Number(await holder.getAttribute('data-agreed'));
     const trials = Number(await holder.getAttribute('data-trials'));
+    expect(agreed).toBe(0);
     expect(trials).toBeGreaterThanOrEqual(2000);
-    // The rendered wording must quote the same two numbers the attributes hold.
     await expect(page.locator('#reflect-output [data-verdict="reflect-control-verdict"]')).toContainText(
-      `0 OF ${trials.toLocaleString()} AGREED`,
+      `${agreed.toLocaleString()} OF ${trials.toLocaleString()} SAMPLED TRIALS AGREED`,
     );
   });
 

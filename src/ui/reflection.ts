@@ -26,10 +26,9 @@ export function renderReflection(root: HTMLElement): void {
   root.appendChild(
     el('p', {
       text:
-        'Most block ciphers need a second circuit to decrypt: an inverse S-box, an inverse matrix, the ' +
-        'round keys in reverse. PRINCE needs none of that. Swap its two whitening keys, add the constant ' +
-        'alpha to its core key, and run the ENCRYPTION circuit — that is decryption. On a chip that is ' +
-        'close to half the area, which is the whole reason the property exists.',
+        'PRINCE can use its encryption core to decrypt. Swap the two whitening keys and XOR the core ' +
+        'key with alpha. The designers report negligible additional hardware for decryption in their ' +
+        'architecture. This browser compares the resulting blocks. Chip area requires a hardware measurement.',
     }),
   );
 
@@ -209,15 +208,9 @@ export function renderReflection(root: HTMLElement): void {
           verdict(
             agreed === 0 ? 'ok' : 'bad',
             'reflect-control-verdict',
-            agreed === 0
-              ? `ALPHA IS LOAD-BEARING — 0 OF ${CONTROL_TRIALS.toLocaleString()} AGREED`
-              : `${agreed} OF ${CONTROL_TRIALS.toLocaleString()} STILL AGREED — ALPHA IS NOT DOING THE WORK`,
-            agreed === 0
-              ? 'With one bit of alpha flipped, the reflection route returns the wrong block every single time. ' +
-                'That is the control: the property is not an accident of PRINCE’s structure, it is the specific ' +
-                'constant that makes the constants pair up.'
-              : 'Some blocks still decrypted correctly with the wrong alpha, which would mean the constant is ' +
-                'not what makes reflection work. Treat the main verdict with suspicion.',
+            `${agreed.toLocaleString()} OF ${CONTROL_TRIALS.toLocaleString()} SAMPLED TRIALS AGREED`,
+            'Each trial changed one bit of alpha and compared the two outputs. The count describes this run. ' +
+              'The six round-constant pairs in the single-block example show where the specified alpha comes from.',
           ),
         ],
       }),
@@ -238,8 +231,7 @@ export function renderReflection(root: HTMLElement): void {
         'Reflection is not free security-wise, and the designers say so. It makes encryption under one key ' +
         'equal to decryption under a related key, which is a structural relation an attacker knows about. ' +
         'The paper addresses this directly — it proves a bound in the ideal cipher model that accounts for ' +
-        'the relation, and it explicitly declines to make claims in the related-key model. The property is a ' +
-        'deliberate trade: roughly half the circuit, in exchange for a symmetry you have to argue is harmless.',
+        'the relation. The designers limit that bound to their stated model and make no related-key security claim.',
     }),
   );
   root.appendChild(caveat);
